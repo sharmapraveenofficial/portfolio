@@ -3,7 +3,7 @@ import Projects from "./components/Projects";
 import SocialLinks from "./components/SocialLinks";
 import UserProfile from "./components/UserProfile";
 import ThemeToggle from "./components/ThemeToggle";
-import FontTester from "./components/FontTester";
+// import FontTester from "./components/FontTester";
 import Skills from "./components/Skills";
 export default function Home() {
   return (

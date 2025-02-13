@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Poppins, Space_Grotesk, IBM_Plex_Sans } from "next/font/google";
+import { Inter, Poppins, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "./components/ThemeProvider";
 import "./globals.css";
 
@@ -15,10 +15,10 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-space-grotesk',
 });
 
-const ibmPlex = IBM_Plex_Sans({
-  weight: ['400', '500', '600'],
-  subsets: ['latin'],
-});
+// const ibmPlex = IBM_Plex_Sans({
+//   weight: ['400', '500', '600'],
+//   subsets: ['latin'],
+// });
 
 export const metadata: Metadata = {
   title: "Praveen's Portfolio",
