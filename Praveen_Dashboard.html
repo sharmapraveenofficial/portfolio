@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praveen Sharma — Job Hunt Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080a0f;
+  --surface: #0e1118;
+  --surface2: #141720;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8e4d9;
+  --muted: #6b6e82;
+  --faint: #2e3142;
+  --accent: #c8f135;
+  --accent2: #5b8bf5;
+  --accent3: #f5a623;
+  --gold: #e8c97a;
+  --red: #f56565;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── noise overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ── grid lines bg ── */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+/* ── hero gradient orb ── */
+.orb {
+  position: fixed;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,241,53,0.06) 0%, transparent 70%);
+  top: -200px; right: -100px;
+  pointer-events: none;
+  animation: orb-drift 12s ease-in-out infinite alternate;
+}
+@keyframes orb-drift { to { transform: translate(-60px, 80px); } }
+
+/* ── layout ── */
+.shell { max-width: 1280px; margin: 0 auto; padding: 0 40px 80px; position: relative; }
+
+/* ── header ── */
+.header {
+  padding: 48px 0 40px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+  animation: fade-up 0.6s ease both;
+}
+@keyframes fade-up { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+.header-left {}
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eyebrow::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--accent);
+}
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin-bottom: 16px;
+}
+h1 em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 400;
+}
+.header-sub {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+}
+
+.header-right {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: 40px;
+}
+.day-counter {
+  font-family: 'Syne', sans-serif;
+  font-size: 80px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--faint);
+  letter-spacing: -0.04em;
+}
+.day-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── stat row ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 48px;
+  animation: fade-up 0.6s ease 0.1s both;
+}
+.stat {
+  background: var(--surface);
+  padding: 24px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.stat::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.stat:hover::after { transform: scaleX(1); }
+.stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-val span { color: var(--accent); }
+.stat-label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── main grid ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  margin-bottom: 24px;
+  animation: fade-up 0.6s ease 0.2s both;
+}
+
+/* ── cards ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.card-badge {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(200,241,53,0.1);
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.card-body { padding: 20px 24px 24px; }
+
+/* ── company table ── */
+.co-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.co-table thead th {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.co-table thead th:first-child { width: 28px; }
+.co-table tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  cursor: default;
+  transition: background 0.15s;
+}
+.co-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.co-table tbody td { padding: 11px 0; vertical-align: middle; }
+.co-table tbody td:first-child {
+  color: var(--faint);
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+}
+.co-name { color: #fff; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 500; }
+.co-country { color: var(--muted); font-size: 11px; }
+.co-role { color: var(--muted); font-size: 11px; max-width: 160px; }
+.co-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  font-family: 'DM Mono', monospace;
+}
+.b-hot  { background: rgba(245,101,101,0.12); color: #f56565; }
+.b-gem  { background: rgba(200,241,53,0.1);   color: var(--accent); }
+.b-relo { background: rgba(91,139,245,0.12);  color: var(--accent2); }
+.b-ai   { background: rgba(245,166,35,0.12);  color: var(--accent3); }
+
+/* ── actions panel ── */
+.actions-panel { display: flex; flex-direction: column; gap: 12px; }
+
+.action-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+.action-card:hover { border-color: var(--border2); background: #181c27; }
+.action-card.urgent { border-color: rgba(245,101,101,0.3); }
+.action-card.urgent:hover { border-color: rgba(245,101,101,0.6); }
+
+.ac-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ac-dot { width: 5px; height: 5px; border-radius: 50%; }
+.dot-red { background: var(--red); box-shadow: 0 0 6px var(--red); animation: pulse-dot 2s infinite; }
+.dot-amber { background: var(--accent3); }
+.dot-green { background: var(--accent); }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ac-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 3px; }
+.ac-desc  { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* ── today checklist ── */
+.checklist { display: flex; flex-direction: column; gap: 6px; }
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 12px;
+  color: var(--text);
+}
+.check-item:hover { border-color: var(--border2); background: #181c27; }
+.check-item.done { opacity: 0.4; text-decoration: line-through; color: var(--muted); }
+.check-box {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--border2);
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  transition: all 0.15s;
+}
+.check-item.done .check-box { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+/* ── bottom grid ── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  animation: fade-up 0.6s ease 0.3s both;
+}
+
+/* ── salary strip ── */
+.salary-list { display: flex; flex-direction: column; }
+.salary-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12px;
+}
+.salary-row:last-child { border-bottom: none; }
+.sr-flag { font-size: 14px; flex-shrink: 0; }
+.sr-country { color: #fff; flex: 1; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 500; }
+.sr-amount { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; }
+.sr-note   { color: var(--muted); font-size: 10px; text-align: right; min-width: 80px; }
+
+/* ── platforms list ── */
+.platform-list { display: flex; flex-direction: column; gap: 8px; }
+.platform-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 11px;
+  transition: border-color 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+.platform-item:hover { border-color: var(--border2); }
+.pi-icon { font-size: 14px; flex-shrink: 0; }
+.pi-name { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 500; color: #fff; }
+.pi-url  { color: var(--muted); font-size: 10px; margin-left: auto; font-family: 'DM Mono', monospace; }
+
+/* ── hidden gems ── */
+.gem-list { display: flex; flex-direction: column; gap: 8px; }
+.gem-item {
+  padding: 12px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+.gem-item:hover { border-color: rgba(200,241,53,0.3); }
+.gi-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.gi-flag { font-size: 14px; }
+.gi-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: #fff; flex: 1; }
+.gi-take { font-size: 11px; color: var(--accent); font-family: 'DM Mono', monospace; }
+.gi-desc { font-size: 10px; color: var(--muted); line-height: 1.5; letter-spacing: 0.02em; }
+
+/* ── section header ── */
+.section { margin-bottom: 24px; animation: fade-up 0.6s ease 0.25s both; }
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.sh-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.sh-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── footer bar ── */
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  animation: fade-up 0.6s ease 0.4s both;
+}
+.footer-right { display: flex; gap: 24px; }
+
+/* ── progress bar ── */
+.prog-wrap { margin-top: 12px; }
+.prog-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+.prog-track { height: 3px; background: var(--faint); border-radius: 2px; }
+.prog-fill  { height: 3px; background: var(--accent); border-radius: 2px; transition: width 1s ease; }
+
+/* responsive */
+@media(max-width: 1024px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .bottom-grid { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2,1fr); }
+  .header { flex-direction: column; gap: 24px; }
+  .header-right { text-align: left; margin-left: 0; }
+  .shell { padding: 0 20px 60px; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb"></div>
+
+<div class="shell">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow">International Job Hunt — Command Center</div>
+      <h1>Praveen<br><em>Sharma</em></h1>
+      <div class="header-sub">
+        Full Stack Engineer &nbsp;·&nbsp; Node.js · React · TypeScript · AWS · GCP · AI<br>
+        5.5 years exp &nbsp;·&nbsp; Google Cloud ACE &nbsp;·&nbsp; Open to relocation &nbsp;·&nbsp; ₹50L+ target
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="day-counter" id="dayCount">001</div>
+      <div class="day-label">of 90 days</div>
+      <div class="prog-wrap" style="min-width:160px">
+        <div class="prog-label"><span>Progress</span><span id="progPct">1%</span></div>
+        <div class="prog-track"><div class="prog-fill" id="progFill" style="width:1%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STATS ── -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val">14<span>+</span></div>
+      <div class="stat-label">Countries targeted</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="apps">0</div>
+      <div class="stat-label">Applications sent</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">110<span>+</span></div>
+      <div class="stat-label">Companies in list</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">₹<span>50L</span></div>
+      <div class="stat-label">Take-home target</div>
+    </div>
+  </div>
+
+  <!-- ── MAIN GRID ── -->
+  <div class="main-grid">
+
+    <!-- companies -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Apply This Week — Top Priority</div>
+        <div class="card-badge">10 companies</div>
+      </div>
+      <div class="card-body">
+        <table class="co-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Company</th>
+              <th>Country</th>
+              <th>Role</th>
+              <th>Tags</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>01</td>
+              <td><div class="co-name">Stripe Dublin</div></td>
+              <td><div class="co-country">🇮🇪 Ireland</div></td>
+              <td><div class="co-role">Full Stack / Backend</div></td>
+              <td><span class="co-badge b-hot">HOT</span></td>
+            </tr>
+            <tr>
+              <td>02</td>
+              <td><div class="co-name">Booking.com</div></td>
+              <td><div class="co-country">🇳🇱 Netherlands</div></td>
+              <td><div class="co-role">Full Stack / Node.js</div></td>
+              <td><span class="co-badge b-relo">RELO</span></td>
+            </tr>
+            <tr>
+              <td>03</td>
+              <td><div class="co-name">Pleo</div></td>
+              <td><div class="co-country">🇩🇰 Denmark</div></td>
+              <td><div class="co-role">Senior Full Stack</div></td>
+              <td><span class="co-badge b-gem">💎 GEM</span></td>
+            </tr>
+            <tr>
+              <td>04</td>
+              <td><div class="co-name">Bolt</div></td>
+              <td><div class="co-country">🇪🇪 Estonia</div></td>
+              <td><div class="co-role">Full Stack / Backend</div></td>
+              <td><span class="co-badge b-gem">💎 GEM</span></td>
+            </tr>
+            <tr>
+              <td>05</td>
+              <td><div class="co-name">Atlassian</div></td>
+              <td><div class="co-country">🇦🇺 Australia</div></td>
+              <td><div class="co-role">Senior SWE</div></td>
+              <td><span class="co-badge b-hot">HOT</span></td>
+            </tr>
+            <tr>
+              <td>06</td>
+              <td><div class="co-name">Cognite</div></td>
+              <td><div class="co-country">🇳🇴 Norway</div></td>
+              <td><div class="co-role">Full Stack / AI</div></td>
+              <td><span class="co-badge b-ai">AI</span></td>
+            </tr>
+            <tr>
+              <td>07</td>
+              <td><div class="co-name">Sea Group</div></td>
+              <td><div class="co-country">🇸🇬 Singapore</div></td>
+              <td><div class="co-role">Full Stack / Backend</div></td>
+              <td><span class="co-badge b-hot">HOT</span></td>
+            </tr>
+            <tr>
+              <td>08</td>
+              <td><div class="co-name">Productboard</div></td>
+              <td><div class="co-country">🇨🇿 Czech Rep.</div></td>
+              <td><div class="co-role">Senior Eng. (AI)</div></td>
+              <td><span class="co-badge b-gem">💎 GEM</span></td>
+            </tr>
+            <tr>
+              <td>09</td>
+              <td><div class="co-name">Canva</div></td>
+              <td><div class="co-country">🇦🇺 Australia</div></td>
+              <td><div class="co-role">Full Stack / Frontend</div></td>
+              <td><span class="co-badge b-hot">HOT</span></td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td><div class="co-name">Grab</div></td>
+              <td><div class="co-country">🇸🇬 Singapore</div></td>
+              <td><div class="co-role">SWE Platform</div></td>
+              <td><span class="co-badge b-relo">RELO</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- right panel -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- urgent actions -->
+      <div class="action-card urgent">
+        <div class="ac-label"><span class="ac-dot dot-red"></span>Urgent — Do Today</div>
+        <div class="ac-title">Lodge ACS Assessment</div>
+        <div class="ac-desc">acs.org.au/msa — takes 4–6 weeks to process. Time-critical for Australia PR route.</div>
+      </div>
+      <div class="action-card">
+        <div class="ac-label"><span class="ac-dot dot-amber"></span>This Week</div>
+        <div class="ac-title">LinkedIn Optimisation</div>
+        <div class="ac-desc">Set location → Amsterdam · toggle Open to Work · add AI/Python experience to all 6 resume versions.</div>
+      </div>
+      <div class="action-card">
+        <div class="ac-label"><span class="ac-dot dot-amber"></span>This Week</div>
+        <div class="ac-title">Deploy AI Project</div>
+        <div class="ac-desc">Build RAG chatbot with Node.js + LangChain + OpenAI API. Deploy to AWS. Push to GitHub with README.</div>
+      </div>
+
+      <!-- today checklist -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Daily Checklist</div>
+        </div>
+        <div class="card-body" style="padding-top:14px">
+          <div class="checklist">
+            <div class="check-item" onclick="this.classList.toggle('done'); this.querySelector('.check-box').textContent = this.classList.contains('done') ? '✓' : '';">
+              <div class="check-box"></div>Apply to 2–3 roles
+            </div>
+            <div class="check-item" onclick="this.classList.toggle('done'); this.querySelector('.check-box').textContent = this.classList.contains('done') ? '✓' : '';">
+              <div class="check-box"></div>3 LeetCode Mediums
+            </div>
+            <div class="check-item" onclick="this.classList.toggle('done'); this.querySelector('.check-box').textContent = this.classList.contains('done') ? '✓' : '';">
+              <div class="check-box"></div>1 system design problem
+            </div>
+            <div class="check-item" onclick="this.classList.toggle('done'); this.querySelector('.check-box').textContent = this.classList.contains('done') ? '✓' : '';">
+              <div class="check-box"></div>1 LinkedIn message
+            </div>
+            <div class="check-item" onclick="this.classList.toggle('done'); this.querySelector('.check-box').textContent = this.classList.contains('done') ? '✓' : '';">
+              <div class="check-box"></div>Check visa jobs GitHub list
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM GRID ── -->
+  <div class="section-header">
+    <div class="sh-line"></div>
+    <div class="sh-label">Reference Data</div>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="bottom-grid">
+
+    <!-- salary -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Take-home Estimates</div>
+        <div class="card-badge">your profile</div>
+      </div>
+      <div class="card-body">
+        <div class="salary-list">
+          <div class="salary-row"><span class="sr-flag">🇸🇬</span><span class="sr-country">Singapore</span><span class="sr-amount">₹70L–1.05Cr</span><span class="sr-note">11–15% tax</span></div>
+          <div class="salary-row"><span class="sr-flag">🇳🇱</span><span class="sr-country">Netherlands</span><span class="sr-amount">₹58–70L</span><span class="sr-note">30% ruling</span></div>
+          <div class="salary-row"><span class="sr-flag">🇩🇰</span><span class="sr-country">Denmark</span><span class="sr-amount">₹52–68L</span><span class="sr-note">⚡ 1–2 wk visa</span></div>
+          <div class="salary-row"><span class="sr-flag">🇦🇺</span><span class="sr-country">Australia</span><span class="sr-amount">₹55–75L</span><span class="sr-note">28–32% tax</span></div>
+          <div class="salary-row"><span class="sr-flag">🇬🇧</span><span class="sr-country">UK</span><span class="sr-amount">₹55–75L</span><span class="sr-note">32–38% tax</span></div>
+          <div class="salary-row"><span class="sr-flag">🇳🇴</span><span class="sr-country">Norway</span><span class="sr-amount">₹55–70L</span><span class="sr-note">PR in 3 yrs</span></div>
+          <div class="salary-row"><span class="sr-flag">🇮🇪</span><span class="sr-country">Ireland</span><span class="sr-amount">₹52–65L</span><span class="sr-note">FAANG HQs</span></div>
+          <div class="salary-row"><span class="sr-flag">🇩🇪</span><span class="sr-country">Germany</span><span class="sr-amount">₹52–65L</span><span class="sr-note">EU Blue Card</span></div>
+          <div class="salary-row"><span class="sr-flag">🇨🇿</span><span class="sr-country">Czech Rep.</span><span class="sr-amount">₹45–65L</span><span class="sr-note">23% flat tax</span></div>
+          <div class="salary-row"><span class="sr-flag">🇵🇱</span><span class="sr-country">Poland B2B</span><span class="sr-amount">₹40–58L</span><span class="sr-note">12% B2B tax</span></div>
+          <div class="salary-row"><span class="sr-flag">🇪🇪</span><span class="sr-country">Estonia</span><span class="sr-amount">₹35–55L</span><span class="sr-note">English-first</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- hidden gems -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Hidden Gems</div>
+        <div class="card-badge">zero competition</div>
+      </div>
+      <div class="card-body">
+        <div class="gem-list">
+          <div class="gem-item">
+            <div class="gi-top"><span class="gi-flag">🇩🇰</span><span class="gi-name">Denmark</span><span class="gi-take">₹52–68L</span></div>
+            <div class="gi-desc">⚡ 1–2 week visa (Positive List). Pleo, Trustpilot, Maersk Tech.</div>
+          </div>
+          <div class="gem-item">
+            <div class="gi-top"><span class="gi-flag">🇪🇪</span><span class="gi-name">Estonia</span><span class="gi-take">₹35–55L</span></div>
+            <div class="gi-desc">Bolt, Wise, Pipedrive HQ. English-first. Your exact Node.js stack.</div>
+          </div>
+          <div class="gem-item">
+            <div class="gi-top"><span class="gi-flag">🇳🇴</span><span class="gi-name">Norway</span><span class="gi-take">₹55–70L</span></div>
+            <div class="gi-desc">PR in 3 yrs. Lower tax than Sweden. Cognite = perfect AI + cloud match.</div>
+          </div>
+          <div class="gem-item">
+            <div class="gi-top"><span class="gi-flag">🇱🇺</span><span class="gi-name">Luxembourg</span><span class="gi-take">₹52–70L</span></div>
+            <div class="gi-desc">Highest EU salaries. Amazon EU HQ. PayPal Europe. Near-zero Indians.</div>
+          </div>
+          <div class="gem-item">
+            <div class="gi-top"><span class="gi-flag">🇦🇹</span><span class="gi-name">Austria</span><span class="gi-take">₹45–62L</span></div>
+            <div class="gi-desc">#1 quality of life globally. Dynatrace (cloud AI unicorn) HQ'd here.</div>
+          </div>
+          <div class="gem-item">
+            <div class="gi-top"><span class="gi-flag">🇨🇿</span><span class="gi-name">Czech Republic</span><span class="gi-take">₹45–65L</span></div>
+            <div class="gi-desc">23% flat tax. Productboard + JetBrains + Apify. Prague = cheap + livable.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- platforms -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Daily Platforms</div>
+      </div>
+      <div class="card-body">
+        <div class="platform-list">
+          <a class="platform-item" href="https://github.com/Lamiiine/Awesome-daily-list-of-visa-sponsored-jobs" target="_blank">
+            <span class="pi-icon">📌</span>
+            <span class="pi-name">GitHub Visa Jobs</span>
+            <span class="pi-url">Daily list</span>
+          </a>
+          <a class="platform-item" href="https://relocate.me" target="_blank">
+            <span class="pi-icon">🌐</span>
+            <span class="pi-name">Relocate.me</span>
+            <span class="pi-url">relocate.me</span>
+          </a>
+          <a class="platform-item" href="https://jaabz.com" target="_blank">
+            <span class="pi-icon">🎯</span>
+            <span class="pi-name">Jaabz</span>
+            <span class="pi-url">jaabz.com</span>
+          </a>
+          <a class="platform-item" href="https://arbeitnow.com" target="_blank">
+            <span class="pi-icon">🇩🇪</span>
+            <span class="pi-name">Arbeitnow</span>
+            <span class="pi-url">Germany · EU</span>
+          </a>
+          <a class="platform-item" href="https://seek.com.au" target="_blank">
+            <span class="pi-icon">🇦🇺</span>
+            <span class="pi-name">SEEK</span>
+            <span class="pi-url">Australia</span>
+          </a>
+          <a class="platform-item" href="https://workindenmark.dk" target="_blank">
+            <span class="pi-icon">🇩🇰</span>
+            <span class="pi-name">Work in Denmark</span>
+            <span class="pi-url">1–2 wk visa</span>
+          </a>
+          <a class="platform-item" href="https://workinestonia.com" target="_blank">
+            <span class="pi-icon">🇪🇪</span>
+            <span class="pi-name">Work in Estonia</span>
+            <span class="pi-url">Bolt · Wise jobs</span>
+          </a>
+          <a class="platform-item" href="https://wellfound.com" target="_blank">
+            <span class="pi-icon">🚀</span>
+            <span class="pi-name">Wellfound</span>
+            <span class="pi-url">Startups · visa filter</span>
+          </a>
+          <a class="platform-item" href="https://levels.fyi" target="_blank">
+            <span class="pi-icon">💰</span>
+            <span class="pi-name">Levels.fyi</span>
+            <span class="pi-url">Salary research</span>
+          </a>
+          <a class="platform-item" href="https://pramp.com" target="_blank">
+            <span class="pi-icon">🎤</span>
+            <span class="pi-name">Pramp</span>
+            <span class="pi-url">Mock interviews</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer">
+    <div>Praveen Sharma — International Job Hunt 2026</div>
+    <div class="footer-right">
+      <span id="footerDate"></span>
+      <span>₹50L+ target · Day <span id="footerDay">1</span> of 90</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// day counter from Apr 1 2026
+const start = new Date('2026-04-01');
+const today = new Date();
+const day = Math.max(1, Math.min(90, Math.floor((today - start) / 86400000) + 1));
+const pct = Math.round(day / 90 * 100);
+
+document.getElementById('dayCount').textContent = String(day).padStart(3,'0');
+document.getElementById('progPct').textContent = pct + '%';
+document.getElementById('progFill').style.width = pct + '%';
+document.getElementById('footerDay').textContent = day;
+document.getElementById('footerDate').textContent = today.toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+
+// apps counter (stored in localStorage)
+const apps = parseInt(localStorage.getItem('ps_apps') || '0');
+document.getElementById('apps').textContent = apps;
+</script>
+</body>
+</html>
